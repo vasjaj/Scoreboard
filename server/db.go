@@ -102,6 +102,10 @@ func findScoresWithPositions(monthly bool) ([]UserScore, error) {
 
 // uses previous function (findScoresWithPositions), but also adds pagination rules
 func findScoresWithPositionsByPage(name string, pageNum, pageSize int64, monthly bool) ([]UserScore, int64, bool, error) {
+	if pageNum == 0 {
+		pageNum = 1
+	}
+
 	var nextPage int64
 	var includesName bool
 

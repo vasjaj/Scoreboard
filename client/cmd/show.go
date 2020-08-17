@@ -3,6 +3,8 @@ package cmd
 import (
 	"fmt"
 	"log"
+	"strconv"
+	"strings"
 
 	"github.com/spf13/cobra"
 	pb "github.com/vasjaj/Scoreboard/client/proto"
@@ -33,6 +35,7 @@ func show(cmd *cobra.Command, args []string) {
 	var monthlyStr string
 	var monthly bool
 	var defPageSize int64 = 5
+	var choice string
 
 	for {
 		fmt.Println("Enter name (can be empty)")
@@ -79,40 +82,56 @@ func show(cmd *cobra.Command, args []string) {
 		}
 
 		printRes(res)
+
+		fmt.Println("Do you want to continue viewing table? y/n")
+		fmt.Scanln(&choice)
+
+		if choice == "n" || choice == "no" {
+			break
+		}
 	}
 }
 
 func printRes(res *pb.LeaderboardResponse) {
-
-	printSeparator()
+	printSeparator("=")
 	fmt.Println("Scoreboard")
-	printSeparator()
+	printSeparator("=")
 
 	scores := res.GetScore()
 	fmt.Printf("Got %v scores \n", len(scores))
 
 	for i := range scores {
-		fmt.Println("--------------------------------------------------------")
-		fmt.Printf("%v has %v points and takes %v place \n", scores[i].GetName(), scores[i].GetPoints(), scores[i].GetPosition())
+		printSeparator("-")
+		fmt.Printf("%v|%v| %v\n", scores[i].GetPosition(), scores[i].GetPoints(), scores[i].GetName())
 	}
-	printSeparator()
+	printSeparator("=")
 
 	aroundScores := res.GetAroundMe()
 
 	if len(aroundScores) > 0 {
+		printSeparator(" ")
 		fmt.Println("Around me")
-		printSeparator()
+		printSeparator("=")
 		fmt.Printf("Got %v scores \n", len(aroundScores))
 
 		for i := range aroundScores {
-			fmt.Println("--------------------------------------------------------")
-			fmt.Printf("%v has %v points and takes %v place \n", aroundScores[i].GetName(), aroundScores[i].GetPoints(), aroundScores[i].GetPosition())
+			printSeparator("-")
+			fmt.Printf("%v|%v| %v\n", aroundScores[i].GetPosition(), aroundScores[i].GetPoints(), aroundScores[i].GetName())
 		}
 	}
 
 	fmt.Println("Next page: ", res.GetNextPage())
+	printSeparator(" ")
+
 }
 
-func printSeparator() {
-	fmt.Println("========================================================")
+func printSeparator(sep string) {
+	fmt.Println(strings.Repeat(sep, 15))
+}
+
+func normalizeNumber(n int64) string {
+	output := strconv.FormatInt(n, 10)
+
+	output = output + strings.Repeat(" ", 10-len(output))
+	return output
 }
