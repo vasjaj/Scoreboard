@@ -92,8 +92,28 @@ All configuration is made via environment variables:
 server - ./configs/server.env
 database - ./config/db.env
 
-## Run
+## How to use
+### Build binary
 
 1. ```docker-compose up --build -d``` (server waits 10s after database startup)
 2. ```cd client```
 3. ```go build -o client .```
+
+### Help output
+```
+Usage:
+   [command]
+
+Available Commands:
+  help        Help about any command
+  save        Starts stream for score saving
+  seed        Creates new records
+  show        Shows table results
+
+Flags:
+  -h, --help           help for this command
+      --token string   Authentication token (default "correct_token")
+      --url string     Service url with port (default "localhost:50051")
+
+Use " [command] --help" for more information about a command.
+```

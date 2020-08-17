@@ -5,7 +5,6 @@ import (
 
 	"github.com/spf13/cobra"
 	pb "github.com/vasjaj/Scoreboard/client/proto"
-	"google.golang.org/grpc"
 	"google.golang.org/protobuf/types/known/emptypb"
 )
 
@@ -20,7 +19,7 @@ var seedCmd = &cobra.Command{
 }
 
 func seed(cmd *cobra.Command, args []string) {
-	conn, err := grpc.Dial("localhost:50051", grpc.WithInsecure())
+	conn, err := startConn()
 	if err != nil {
 		log.Fatalf("Error: %v", err)
 	}
