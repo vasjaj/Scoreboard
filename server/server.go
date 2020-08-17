@@ -34,21 +34,19 @@ func (*server) StoreScore(stream pb.Scoreboard_StoreScoreServer) error {
 			return nil
 		}
 		if err != nil {
-			log.Println("Error while stopping stream")
-			log.Fatalf("Error: %v", err)
+			return err
 		}
 
 		// process request and get position
 		// done in additional function for readability purposes
 		position, err := processStoreScoreRequest(req)
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			return err
 		}
 
 		err = stream.Send(&pb.PlayerScoreResponse{Rank: position})
-
 		if err != nil {
-			log.Fatalf("Error: %v", err)
+			return err
 		}
 	}
 }

@@ -86,8 +86,8 @@ func save(cmd *cobra.Command, args []string) {
 
 	}
 
-	fmt.Println("Waiting 5 seconds to close stream properly")
-	time.Sleep(time.Second * 5)
+	fmt.Println("Waiting 3 seconds to close stream properly")
+	time.Sleep(time.Second * 3)
 
 	fmt.Println("Done")
 }
