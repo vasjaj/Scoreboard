@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"log"
 
 	"github.com/spf13/cobra"
@@ -32,5 +33,5 @@ func seed(cmd *cobra.Command, args []string) {
 		log.Fatalf("Error: %v", err)
 	}
 
-	log.Println("Successfully created new records")
+	fmt.Println("Successfully created new records")
 }

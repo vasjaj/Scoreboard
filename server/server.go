@@ -23,6 +23,7 @@ import (
 type server struct{}
 
 func (*server) StoreScore(stream pb.Scoreboard_StoreScoreServer) error {
+	// endless loop for requests
 	for {
 		log.Println("Got StoreScore request")
 
@@ -33,10 +34,12 @@ func (*server) StoreScore(stream pb.Scoreboard_StoreScoreServer) error {
 			return nil
 		}
 		if err != nil {
-			log.Println("Error while stoping stream")
+			log.Println("Error while stopping stream")
 			log.Fatalf("Error: %v", err)
 		}
 
+		// process request and get position
+		// done in additional function for readability purposes
 		position, err := processStoreScoreRequest(req)
 		if err != nil {
 			log.Fatalf("Error: %v", err)
@@ -52,17 +55,15 @@ func (*server) StoreScore(stream pb.Scoreboard_StoreScoreServer) error {
 
 func (*server) GetLeaderboard(ctx context.Context, req *pb.LeaderboardRequest) (*pb.LeaderboardResponse, error) {
 	log.Println("Got GetLeaderboard request")
-	log.Println("Name: ", req.GetName())
-	log.Println("Page: ", req.GetPage())
-	log.Println("Page size: ", req.GetPageSize())
-	log.Println("Monthly: ", req.GetMonthly())
 
+	// get score table bases on request params
+	// scores - player scores
+	// nextPage - number of next page
+	// includesName - needed for around_me functionality
 	scores, nextPage, includesName, err := findScoresWithPositionsByPage(req.GetName(), req.GetPage(), req.GetPageSize(), req.GetMonthly())
 	if err != nil {
 		return nil, err
 	}
-
-	log.Printf("Found %v scores \n", len(scores))
 
 	var scoresRes []*pb.LeaderboardScore
 	for i := range scores {
@@ -70,15 +71,13 @@ func (*server) GetLeaderboard(ctx context.Context, req *pb.LeaderboardRequest) (
 	}
 
 	var aroundMeRes []*pb.LeaderboardScore
+	// if request has name and this name was not in previous results
 	if req.GetName() != "" && !includesName {
-		log.Println("Searching for players around")
-
+		// find scores around player
 		aroundScores, err := findScoresAround(req.GetName(), req.GetMonthly())
 		if err != nil {
 			return nil, err
 		}
-
-		log.Printf("Found %v scores around \n", len(aroundScores))
 
 		for i := range aroundScores {
 			aroundMeRes = append(aroundMeRes, &pb.LeaderboardScore{Name: aroundScores[i].Name, Position: aroundScores[i].Position, Points: aroundScores[i].Points})
@@ -99,12 +98,15 @@ func processStoreScoreRequest(req *pb.PlayerScoreRequest) (int64, error) {
 	name := req.GetName()
 	points := req.GetPoints()
 
+	// find current score for later manipulations
 	score, err := findScore(name)
 	if err != nil {
+		// record is new then save and find current position
 		if gorm.IsRecordNotFoundError(err) {
 			saveScore(name, points)
 
 			score, err = findScoreWithPosition(name)
+
 			if err != nil {
 				log.Fatalf("Error: %v", err)
 			}
@@ -115,6 +117,7 @@ func processStoreScoreRequest(req *pb.PlayerScoreRequest) (int64, error) {
 		}
 	}
 
+	// check whether new score is more than previus, update if it is
 	if score.Points < points {
 		err := updateScore(name, points)
 
@@ -123,6 +126,7 @@ func processStoreScoreRequest(req *pb.PlayerScoreRequest) (int64, error) {
 		}
 	}
 
+	// find current position
 	score, err = findScoreWithPosition(name)
 	if err != nil {
 		log.Fatalf("Error: %v", err)
@@ -134,6 +138,7 @@ func processStoreScoreRequest(req *pb.PlayerScoreRequest) (int64, error) {
 func authFunc(ctx context.Context) (context.Context, error) {
 	authToken := os.Getenv("AUTH_TOKEN")
 
+	// happens if token is not provided as environmant variable
 	if authToken == "" {
 		return ctx, errors.New("auth token not found")
 	}
@@ -145,6 +150,7 @@ func authFunc(ctx context.Context) (context.Context, error) {
 
 	log.Println("Incoming token:", md["token"])
 
+	// return error if requests's token is invalid
 	if md["token"][0] != authToken {
 		return ctx, status.Error(codes.Unauthenticated, "invalid authentication token")
 	}
@@ -153,7 +159,7 @@ func authFunc(ctx context.Context) (context.Context, error) {
 }
 
 func setupServer() *grpc.Server {
-
+	// interceptors for both stream and unary
 	s := grpc.NewServer(
 		grpc.StreamInterceptor(
 			auth.StreamServerInterceptor(authFunc),

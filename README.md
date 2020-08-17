@@ -68,9 +68,9 @@ Simple request which seeds data for testing purposes.
 
 Idea was simple - use single query which generates full score table, it would look something like this:
 
-"SELECT scores.name, scores.points, RANK () OVER (PARTITION BY scores.name ORDER BY scores.points DESC) AS position FROM user_scores AS scores WHERE scores.name = ?"
+```SELECT scores.name, scores.points, RANK () OVER (PARTITION BY scores.name ORDER BY scores.points DESC) AS position FROM user_scores AS scores WHERE scores.name = ?```
 
-Where "RANK () OVER (PARTITION BY scores.name ORDER BY scores.points DESC) AS position" would do the job, but there was problem for both MySQL and PostgreSQL adapters which would mark query as invalid because of "RANK..." part.
+Where ```RANK () OVER (PARTITION BY scores.name ORDER BY scores.points DESC) AS position``` would do the job, but there was problem for both MySQL and PostgreSQL adapters which would mark query as invalid because of "RANK..." part.
 
 To fix this problem data manipulation is separated in two parts:
 
@@ -95,11 +95,13 @@ database - ./config/db.env
 ## How to use
 ### Build binary
 
-1. ```docker-compose up --build -d``` (server waits 10s after database startup)
-2. ```cd client```
-3. ```go build -o client .```
+1. ```git clone https://github.com/vasjaj/Scoreboard```
+2. ```docker-compose up --build -d``` (server waits 10s after database startup)
+3. ```cd client```
+4. ```go build -o client .```
+5. ```./client```
 
-### Help output
+### Help
 ```
 Usage:
    [command]
@@ -117,3 +119,9 @@ Flags:
 
 Use " [command] --help" for more information about a command.
 ```
+
+### Worflow
+
+1. Seed data with ```./client seed```
+2. Add new with  ```./client save```
+3. See scoreboard ```./client show```

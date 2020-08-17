@@ -32,13 +32,19 @@ func show(cmd *cobra.Command, args []string) {
 	var page int64
 	var monthlyStr string
 	var monthly bool
+	var defPageSize int64 = 5
 
 	for {
-		fmt.Println("Enter name")
+		fmt.Println("Enter name (can be empty)")
 		fmt.Scanln(&name)
 
-		fmt.Println("Enter page size")
+		fmt.Printf("Enter page size (default: %v) \n", defPageSize)
 		fmt.Scanln(&pageSize)
+		if pageSize == 0 {
+			pageSize = defPageSize
+		} else {
+			defPageSize = pageSize
+		}
 
 		fmt.Println("Enter page")
 		fmt.Scanln(&page)
@@ -62,11 +68,11 @@ func show(cmd *cobra.Command, args []string) {
 		res, err := c.GetLeaderboard(contextWithAuth(), &req)
 		if err != nil {
 			if authenticationError(err) {
-				log.Println("Authentication error")
+				fmt.Println("Authentication error")
 			}
 
 			if invalidArgumentError(err) {
-				log.Println("Invalid page number")
+				fmt.Println("Invalid page number")
 			}
 
 			log.Fatalf("Error: %v", err)
@@ -78,8 +84,9 @@ func show(cmd *cobra.Command, args []string) {
 
 func printRes(res *pb.LeaderboardResponse) {
 
-	fmt.Println("========================================================")
+	printSeparator()
 	fmt.Println("Scoreboard")
+	printSeparator()
 
 	scores := res.GetScore()
 	fmt.Printf("Got %v scores \n", len(scores))
@@ -88,20 +95,24 @@ func printRes(res *pb.LeaderboardResponse) {
 		fmt.Println("--------------------------------------------------------")
 		fmt.Printf("%v has %v points and takes %v place \n", scores[i].GetName(), scores[i].GetPoints(), scores[i].GetPosition())
 	}
-	fmt.Println("========================================================")
+	printSeparator()
 
 	aroundScores := res.GetAroundMe()
 
 	if len(aroundScores) > 0 {
 		fmt.Println("Around me")
+		printSeparator()
 		fmt.Printf("Got %v scores \n", len(aroundScores))
 
 		for i := range aroundScores {
 			fmt.Println("--------------------------------------------------------")
 			fmt.Printf("%v has %v points and takes %v place \n", aroundScores[i].GetName(), aroundScores[i].GetPoints(), aroundScores[i].GetPosition())
 		}
-		fmt.Println("========================================================")
 	}
 
 	fmt.Println("Next page: ", res.GetNextPage())
+}
+
+func printSeparator() {
+	fmt.Println("========================================================")
 }

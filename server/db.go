@@ -11,12 +11,7 @@ import (
 	"github.com/jinzhu/now"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/status"
-	// _ "github.com/jinzhu/gorm/dialects/postgres"
 )
-
-var PositionsQuery string = "select user_scores.name, user_scores.points, Position () over (order by user_scores.points desc) AS position from user_scores"
-
-// var PositionQuery string = "SELECT scores.name, scores.points, Position () OVER (PARTITION BY scores.name ORDER BY scores.points DESC) AS position FROM user_scores AS scores WHERE scores.name = ?"
 
 type UserScore struct {
 	gorm.Model
@@ -44,6 +39,7 @@ func setupDB() (*gorm.DB, error) {
 	return db, nil
 }
 
+// find score for name
 func findScore(name string) (UserScore, error) {
 	var score UserScore
 
@@ -52,6 +48,7 @@ func findScore(name string) (UserScore, error) {
 	return score, err
 }
 
+//find score for name, but with position calculation
 func findScoreWithPosition(name string) (UserScore, error) {
 	score := UserScore{}
 	scores, err := findScoresWithPositions(false)
@@ -69,14 +66,18 @@ func findScoreWithPosition(name string) (UserScore, error) {
 	return score, errors.New("user not found by name")
 }
 
+// update existing score
 func updateScore(name string, points int64) error {
 	return db.Table("user_scores").Where("name = ?", name).Update("points", points).Error
 }
 
+// save new score
 func saveScore(name string, points int64) error {
 	return db.Create(&UserScore{Name: name, Points: points}).Error
 }
 
+// get score table with positions
+// positions are not calculated because of problem which is decribed in readme
 func findScoresWithPositions(monthly bool) ([]UserScore, error) {
 	var scores []UserScore
 	var err error
@@ -99,10 +100,12 @@ func findScoresWithPositions(monthly bool) ([]UserScore, error) {
 	return scores, nil
 }
 
+// uses previous function (findScoresWithPositions), but also adds pagination rules
 func findScoresWithPositionsByPage(name string, pageNum, pageSize int64, monthly bool) ([]UserScore, int64, bool, error) {
 	var nextPage int64
 	var includesName bool
 
+	// get scores table
 	scores, err := findScoresWithPositions(monthly)
 	if err != nil {
 		return scores, nextPage, includesName, err
@@ -111,12 +114,14 @@ func findScoresWithPositionsByPage(name string, pageNum, pageSize int64, monthly
 	scoresLen := int64(len(scores))
 	skipScores := (pageNum - 1) * pageSize
 
+	// check if page + page_number calculation is valid
 	if scoresLen <= skipScores {
 		return scores, nextPage, includesName, status.Error(codes.InvalidArgument, "invalid page number")
 	}
 
 	scoresFrom := skipScores
 
+	// make sure not to get out of slice bounds
 	var scoresTo int64
 	if skipScores+pageSize > scoresLen {
 		scoresTo = scoresLen
@@ -139,14 +144,18 @@ func findScoresWithPositionsByPage(name string, pageNum, pageSize int64, monthly
 	return scores[scoresFrom:scoresTo], nextPage, includesName, nil
 }
 
+// finds scores around player
 func findScoresAround(name string, monthly bool) ([]UserScore, error) {
+	// random number, there was no requirements
 	aroundSize := 5
 
+	// get score table
 	scores, err := findScoresWithPositions(monthly)
 	if err != nil {
 		return scores, err
 	}
 
+	// find players position in list
 	nameIndex := -1
 	for i := range scores {
 		if scores[i].Name == name {
@@ -156,12 +165,13 @@ func findScoresAround(name string, monthly bool) ([]UserScore, error) {
 		}
 	}
 
+	// check if user with given name exists
 	if nameIndex < 0 {
 		return scores, errors.New("user not found by name")
 	}
 
+	// make sure not to get out of slice bounds
 	var aroundFrom, aroundTo int
-
 	if nameIndex-aroundSize > 0 {
 		aroundFrom = nameIndex - aroundSize
 	} else {
@@ -177,18 +187,8 @@ func findScoresAround(name string, monthly bool) ([]UserScore, error) {
 	return scores[aroundFrom:aroundTo], nil
 }
 
-// func printScores(scores []UserScore) {
-// 	for i := range scores {
-// 		fmt.Println("==================")
-// 		fmt.Println("Index: ", i)
-// 		fmt.Println("Name:", scores[i].Name)
-// 		fmt.Println("Points: ", scores[i].Points)
-// 		fmt.Println("Position: ", scores[i].Position)
-// 		fmt.Println("==================")
-// 		fmt.Println("")
-// 	}
-// }
-
+// assign positions for score table
+// could me much better with RANK () OVER
 func assignPositions(scores []UserScore) {
 	for i := range scores {
 		if i == 0 {
@@ -205,6 +205,7 @@ func assignPositions(scores []UserScore) {
 	}
 }
 
+// create some records
 func seed() {
 	db.Unscoped().Delete(&UserScore{})
 	db.Create(&UserScore{Name: "John", Points: 10})

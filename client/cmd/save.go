@@ -59,11 +59,11 @@ func save(cmd *cobra.Command, args []string) {
 
 		if err != nil {
 			if err == io.EOF {
-				log.Println("Stream closed")
+				fmt.Println("Stream closed")
 			}
 
 			if authenticationError(err) {
-				log.Println("Authentication error")
+				fmt.Println("Authentication error")
 			}
 
 			log.Fatalf("Error: %v", err)
@@ -75,7 +75,7 @@ func save(cmd *cobra.Command, args []string) {
 		fmt.Scanln(&choice)
 
 		if choice == "n" || choice == "no" {
-			log.Println("Closing stream ")
+			fmt.Println("Closing stream ")
 
 			if err := stream.CloseSend(); err != nil {
 				log.Fatalf("Error: %v", err)
@@ -86,10 +86,10 @@ func save(cmd *cobra.Command, args []string) {
 
 	}
 
-	log.Println("Waiting 5 seconds to close stream properly")
+	fmt.Println("Waiting 5 seconds to close stream properly")
 	time.Sleep(time.Second * 5)
 
-	log.Println("Done")
+	fmt.Println("Done")
 }
 
 // func doBidrectional(c calculatorpb.CalculatorServiceClient) {

@@ -12,6 +12,7 @@ var db *gorm.DB
 func main() {
 	var err error
 
+	// setup db connection
 	db, err = setupDB()
 	if err != nil {
 		log.Fatalln("Failed to open DB connection")
@@ -25,6 +26,7 @@ func main() {
 
 	log.Println("Starting server")
 
+	// start server
 	lis, err := net.Listen("tcp", "0.0.0.0:50051")
 	if err != nil {
 		log.Fatalf("Error: %v", err)
