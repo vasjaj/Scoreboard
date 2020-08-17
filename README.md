@@ -9,10 +9,9 @@ Scoreboard is separated in 3 modules - server, client,  and database.
 
 ## Server
 
-main.go - server and database initialization
-db.go - database initializtion and functions
-server-go - server initialization and handlers
-
+- main.go - server and database initialization 
+- db.go - database initialization and functions
+- server-go - server initialization and handlers
 
 RPC server with 3 requests:
 - StoreScore - bidirectional
@@ -44,26 +43,26 @@ rank - players runk in leaderboard.
 
 Arguments:
 
-name - players name
-page_size - page size
-page - page number
-monthly - indicates whethe current month should be used as a global period
+- name - players name
+- page_size - page size
+- page - page number
+- monthly - indicates whethe current month should be used as a global period
 
-Makes score table base on page and page_size.
-If page + page_size is incorrect, then appropriate error code will be returned(InvalidArgument). 
-If monthly is true then scores will be taken for current month.
-If name is passed and user is not in current or previous pages, then around_me section will be added.
-Around_me sections contains 0-5 players before and 0-5 players after player with given name.
+Makes score table base on page and page_size.  
+If page + page_size is incorrect, then appropriate error code will be returned(InvalidArgument).  
+If monthly is true then scores will be taken for current month.  
+If name is passed and user is not in current or previous pages, then around_me section will be added.  
+Around_me sections contains 0-5 players before and 0-5 players after player with given name.  
 
 Response:
 
-next_page - next page, "0" if there is no.
-score - score board based on page_size and page.
-around_me - additional board with players around given player.
+- next_page - next page, "0" if there is no.
+- score - score board based on page_size and page.
+- around_me - additional board with players around given player.
 
 ### Seed
 
-Simple request which seed data for testing purposes.
+Simple request which seeds data for testing purposes.
 
 ### Notes
 
@@ -81,8 +80,8 @@ To fix this problem data manipulation is separated in two parts:
 
 ## Client
 
-Initial ides was to implement it on React, but it happens that grpc-web does not support bidirectional streaming (StoreScore is bidirectional),
-so client is a simple go application.
+Initial idea was to implement it on React, but it happens that grpc-web does not support bidirectional streaming (StoreScore is bidirectional),
+so client is a simple go CLI application.
 
 ## Configuration
 
@@ -95,4 +94,6 @@ database - ./config/db.env
 
 ## Run
 
-docker-compose up --build -d
+1. ```docker-compose up --build -d``` (server waits 10s after database startup)
+2. ```cd client```
+3. ```go build -o client .```
