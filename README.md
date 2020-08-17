@@ -2,7 +2,9 @@
 
 ## Structure
 
-Scoreboard is separated in 3 modules - server, client,  and database.
+Scoreboard is separated in 3 modules - server, client,  and database.  
+I also ignroed go convention for variable names on readabilty purposes.
+
 
 - Database and server are configurated and have to run via docker-compose
 - Client is a go CLI application which has to be compiled
