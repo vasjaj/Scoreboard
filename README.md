@@ -3,8 +3,7 @@
 ## Structure
 
 Scoreboard is separated in 3 modules - server, client,  and database.  
-I also ignroed go convention for variable names on readabilty purposes.
-
+I also ignroed go convention for variable names for readabilty purpose.
 
 - Database and server are configurated and have to run via docker-compose
 - Client is a go CLI application which has to be compiled
@@ -39,7 +38,7 @@ Updates score if person exists and new score is greater than previous.
 
 Response:
 
-rank - players runk in leaderboard.
+position - players position in leaderboard.
 
 ### GetLeaderboard
 
@@ -54,7 +53,7 @@ Makes score table base on page and page_size.
 If page + page_size is incorrect, then appropriate error code will be returned(InvalidArgument).  
 If monthly is true then scores will be taken for current month.  
 If name is passed and user is not in current or previous pages, then around_me section will be added.  
-Around_me sections contains 0-5 players before and 0-5 players after player with given name.  
+Around_me sections contains 0-5 players before and 0-5 players after player with given name(there was no requirements regarding around players).
 
 Response:
 
@@ -95,10 +94,10 @@ server - ./configs/server.env
 database - ./config/db.env
 
 ## How to use
-### Build binary
+### Build and run
 
 1. ```git clone https://github.com/vasjaj/Scoreboard```
-2. ```docker-compose up --build -d``` (server waits 10s after database startup)
+2. ```docker-compose up --build -d``` (server waits 10s after database startup, some there could errors on client right after startup)
 3. ```cd client```
 4. ```go build -o client .```
 5. ```./client```
@@ -122,8 +121,8 @@ Flags:
 Use " [command] --help" for more information about a command.
 ```
 
-### Worflow
+### Workflow
 
 1. Seed data with ```./client seed```
-2. Add new with  ```./client save```
+2. Add or update existing with  ```./client save```
 3. See scoreboard ```./client show```
