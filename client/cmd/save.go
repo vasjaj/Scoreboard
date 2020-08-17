@@ -39,11 +39,9 @@ func save(cmd *cobra.Command, args []string) {
 	for {
 		fmt.Println("Enter name")
 		fmt.Scanln(&name)
-		fmt.Println("Entered name: ", name)
 
 		fmt.Println("Enter points")
 		fmt.Scanln(&points)
-		fmt.Println("Entered points: ", points)
 
 		req := pb.PlayerScoreRequest{
 			Name:   name,

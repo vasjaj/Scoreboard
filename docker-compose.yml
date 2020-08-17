@@ -1,0 +1,31 @@
+version: "3"
+
+services:
+  db:
+    container_name: db
+    image: mariadb:latest
+    command: --character-set-server=utf8mb4 --collation-server=utf8mb4_general_ci
+    env_file:
+      - ./configs/db.env
+    volumes:
+      - db_data:/var/lib/mysql
+    ports:
+      - 3306:3306
+
+  server:
+    build:
+      context: server
+      dockerfile: Dockerfile
+    container_name: server
+    depends_on:
+      - db
+    env_file:
+      - configs/server.env
+    environment:
+      WAIT_HOSTS: db:3306
+      WAIT_AFTER_HOSTS: 10
+    ports:
+      - 50051:50051
+
+volumes:
+  db_data:

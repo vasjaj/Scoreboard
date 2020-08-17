@@ -37,15 +37,12 @@ func show(cmd *cobra.Command, args []string) {
 	for {
 		fmt.Println("Enter name")
 		fmt.Scanln(&name)
-		fmt.Println("Entered name: ", name)
 
 		fmt.Println("Enter page size")
 		fmt.Scanln(&pageSize)
-		fmt.Println("Entered page size: ", pageSize)
 
 		fmt.Println("Enter page")
 		fmt.Scanln(&page)
-		fmt.Println("Entered page: ", page)
 
 		fmt.Println("Monthly? y/n")
 		fmt.Scanln(&monthlyStr)
